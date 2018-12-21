@@ -69,6 +69,16 @@ module.exports.addTestUser = (uin, val) => {
  * @returns {void | * | Promise<any> | Promise<never>}
  */
 module.exports.addTestUsers = (map) => {
+    let expire = 24 * 60 * 60;
+
+    if (typeof window !== 'undefined' && window.request.cookies && window.request.cookies['_expiresTest']) {
+        const expectExpire = parseInt(window.request.cookies['_expiresTest'] || 1, 10);
+
+        if (!isNaN(expectExpire)) {
+            expire = Math.max(Math.min(expectExpire, 30), 1) * 60 * 60;
+        }
+    }
+
     const uins = Object.keys(map);
     logger.debug('addTestUsers:' + uins);
     const defer = Deferred.create();
@@ -109,8 +119,6 @@ module.exports.addTestUsers = (map) => {
             data = post.decode(appid, appkey, data);
         }
 
-        const expire = 24 * 60 * 60;
-
         if (err) {
             logger.error('memcache get error:' + err);
             return defer.reject('memcache get error');
@@ -149,4 +157,3 @@ module.exports.addTestUsers = (map) => {
 
     return defer;
 };
-
